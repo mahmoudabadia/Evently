@@ -1,4 +1,4 @@
-import 'package:evently_app/home/widgets/custom_text_field.dart';
+import '../../widgets/custom_text_field.dart';
 import 'package:evently_app/l10n/app_localizations.dart';
 import 'package:evently_app/utilis/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -19,13 +19,32 @@ class FavoriteTab extends StatefulWidget {
 
 class _FavoriteTabState extends State<FavoriteTab> {
   Stream<List<Event>>? stream;
-  List<Event> favoriteList = [];
+  final TextEditingController _searchController = TextEditingController();
+  List<Event> allFavoriteList = [];
+  List<Event> filteredFavoriteList = [];
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     stream = grtAllFavoriteEvents();
+  }
+
+  void _filterEvents(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filteredFavoriteList = allFavoriteList;
+      } else {
+        filteredFavoriteList = allFavoriteList.where((event) {
+          return event.evenTitle.toLowerCase().contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -36,13 +55,15 @@ class _FavoriteTabState extends State<FavoriteTab> {
 
     return SafeArea(
       child: Padding(
-        padding: EdgeInsetsGeometry.symmetric(
+        padding: EdgeInsets.symmetric(
           vertical: height * .04,
           horizontal: width * .04,
         ),
         child: Column(
           children: [
             CustomTextField(
+              controller: _searchController,
+              onChanged: _filterEvents,
               hintStyle: Theme.of(context).textTheme.bodyLarge,
               hintText: AppLocalizations.of(context)!.search,
               suffixIcon: Icon(
@@ -67,8 +88,7 @@ class _FavoriteTabState extends State<FavoriteTab> {
                         style: Theme.of(context).textTheme.headlineMedium,
                       ),
                     );
-                  } else if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
+                  } else if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
                       child: CircularProgressIndicator(
                         color: AppColors.mainLightColor,
@@ -82,26 +102,37 @@ class _FavoriteTabState extends State<FavoriteTab> {
                       ),
                     );
                   } else {
-                    favoriteList = snapshot.data!;
-                    return favoriteList.isEmpty
+                    allFavoriteList = snapshot.data!;
+
+                    if (_searchController.text.isEmpty) {
+                      filteredFavoriteList = allFavoriteList;
+                    } else {
+                      filteredFavoriteList = allFavoriteList.where((event) {
+                        return event.evenTitle
+                            .toLowerCase()
+                            .contains(_searchController.text.toLowerCase());
+                      }).toList();
+                    }
+
+                    return filteredFavoriteList.isEmpty
                         ? Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noEventsFound,
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                          )
+                      child: Text(
+                        AppLocalizations.of(context)!.noEventsFound,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                    )
                         : ListView.separated(
-                            itemBuilder: (context, index) {
-                              return EventItemWidget(
-                                index: index,
-                                event: favoriteList[index]
-                              );
-                            },
-                            separatorBuilder: (context, index) {
-                              return SizedBox(height: height * .02);
-                            },
-                            itemCount: favoriteList.length,
-                          );
+                      itemBuilder: (context, index) {
+                        return EventItemWidget(
+                          index: index,
+                          event: filteredFavoriteList[index],
+                        );
+                      },
+                      separatorBuilder: (context, index) {
+                        return SizedBox(height: height * .02);
+                      },
+                      itemCount: filteredFavoriteList.length,
+                    );
                   }
                 },
               ),
@@ -111,6 +142,7 @@ class _FavoriteTabState extends State<FavoriteTab> {
       ),
     );
   }
+
   Stream<List<Event>> grtAllFavoriteEvents() {
     return FirebaseUtilis.getEventCollection()
         .where("is_favorite", isEqualTo: true)
@@ -122,5 +154,4 @@ class _FavoriteTabState extends State<FavoriteTab> {
       }).toList();
     });
   }
-
 }
