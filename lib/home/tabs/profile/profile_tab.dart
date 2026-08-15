@@ -139,7 +139,7 @@ class _ProfileTabState extends State<ProfileTab> {
     var languageProvider = Provider.of<AppLanguageProvider>(
         context, listen: false);
 
-    showModalBottomSheet(
+     showModalBottomSheet(
       context: context,
       builder: (context) {
         return Container(
