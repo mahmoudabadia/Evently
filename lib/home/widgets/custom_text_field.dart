@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../utilis/app_colors.dart';
-typedef OnValidator =  String? Function(String?)?;
+
+typedef OnValidator = String? Function(String?)?;
+
 class CustomTextField extends StatelessWidget {
   final double? redius;
   final Color? borderColor;
@@ -19,6 +21,7 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final int? maxLines;
   final OnValidator? validator;
+
   const CustomTextField({
     super.key,
     this.redius,
@@ -31,12 +34,12 @@ class CustomTextField extends StatelessWidget {
     this.fill,
     this.prefixIcon,
     this.suffixIcon,
-    this.maxLines=1,
+    this.maxLines = 1,
     this.controller,
     this.onChanged,
     this.validator,
-    this.keyboardType=TextInputType.text,
-    this.obscureText=false,
+    this.keyboardType = TextInputType.text,
+    this.obscureText = false,
   });
 
   @override
@@ -74,7 +77,6 @@ class CustomTextField extends StatelessWidget {
       validator: validator,
       keyboardType: keyboardType,
       obscureText: obscureText,
-
 
 
     );
